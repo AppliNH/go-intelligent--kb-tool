@@ -56,7 +56,7 @@ func searchInSelectedDocuments(search string) []string {
 		}
 
 	}
-	return searchResults
+	return utils.RemoveDuplicate(searchResults)
 
 }
 
