@@ -64,7 +64,7 @@ func suggest(d prompt.Document) []prompt.Suggest {
 
 	var res []string
 	var promptSuggest []prompt.Suggest
-
+	d.Text = strings.ToLower(d.Text)
 	if d.Text != "" {
 		if mode == 1 {
 			res = searchInDocuments(currDb, d.Text)
@@ -73,7 +73,7 @@ func suggest(d prompt.Document) []prompt.Suggest {
 		}
 
 		for _, v := range res {
-			promptSuggest = append(promptSuggest, prompt.Suggest{Text: v})
+			promptSuggest = append(promptSuggest, prompt.Suggest{Text: strings.Title(strings.ToLower(v))})
 		}
 	}
 	return prompt.FilterHasPrefix(promptSuggest, d.GetWordBeforeCursor(), true)
@@ -117,8 +117,8 @@ func main() {
 
 	result := make(map[string]string)
 
-	result[choice] = t1
-	result[notChosen] = t2
+	result[choice] = strings.ToLower(t1)
+	result[notChosen] = strings.ToLower(t2)
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
@@ -133,5 +133,5 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("You choose %q\n", result["Name"]+" "+result["Surname"])
+	fmt.Printf("You choose %q\n", strings.Title(strings.ToLower(result["Name"]))+" "+strings.Title(strings.ToLower(result["Surname"])))
 }
