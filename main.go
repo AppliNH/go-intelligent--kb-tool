@@ -143,6 +143,10 @@ func runSelectMode(chosen string, notChosen string) (string, string) {
 
 func main() {
 
+	if len(os.Args) < 2 {
+		panic("No arguments provided ! You need to specify select or suggest mode.")
+	}
+
 	option := os.Args[1]
 
 	db, err := kvdb.InitDB()
