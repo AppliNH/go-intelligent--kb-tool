@@ -150,6 +150,11 @@ func main() {
 
 	option := os.Args[1]
 
+	if option != "select" && option != "suggest" {
+		s := fmt.Sprintf("Wrong argument. Expect select or suggest for executing, and you passed %v", option)
+		panic(s)
+	}
+
 	db, err := kvdb.InitDB()
 	if err != nil {
 		panic(err)
@@ -170,7 +175,8 @@ func main() {
 
 	i, choice, err := nameOrSurname.Run()
 	if err != nil {
-		panic(err)
+		s := fmt.Sprintf("Error while selecting name or surname %v", err)
+		panic(s)
 	}
 
 	// Setting the notChosen => Name or Surname
