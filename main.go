@@ -4,22 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-kb/utils"
+	"os"
 
 	"go-kb/kvdb"
 	"strings"
 
-	"github.com/boltdb/bolt"
 	"github.com/c-bata/go-prompt"
 	"github.com/manifoldco/promptui"
 
 	"github.com/google/uuid"
 )
 
-var db *bolt.DB
 var currDb map[string]string = make(map[string]string)
 var currSearchType string
 
-var mode int = 1
+var step int = 1
 
 var selectedDocuments []map[string]string
 
@@ -66,7 +65,7 @@ func suggest(d prompt.Document) []prompt.Suggest {
 	var promptSuggest []prompt.Suggest
 	d.Text = strings.ToLower(d.Text)
 	if d.Text != "" {
-		if mode == 1 {
+		if step == 1 {
 			res = searchInDocuments(currDb, d.Text)
 		} else {
 			res = searchInSelectedDocuments(d.Text)
@@ -80,7 +79,72 @@ func suggest(d prompt.Document) []prompt.Suggest {
 
 }
 
+func runSuggestMode(chosen string, notChosen string) (string, string) {
+
+	t1 := prompt.Input(chosen+" ? : ", suggest)
+
+	// Next suggestions will be based on the previously found documents
+	step = 2
+
+	// Search type => Name or Surname
+	currSearchType = notChosen
+
+	t2 := prompt.Input(notChosen+" ? : ", suggest)
+
+	return t1, t2
+
+}
+
+func runSelectMode(chosen string, notChosen string) (string, string) {
+	prompt1 := promptui.Prompt{
+		Label: chosen + " ?",
+	}
+
+	answer1, _ := prompt1.Run()
+
+	searchInDocuments(currDb, strings.ToLower(answer1)) // will fill up selectedDocuments
+
+	var answer2 string
+
+	if len(selectedDocuments) > 0 {
+
+		var selectedItemsOfNotChosen []string
+		for _, v := range selectedDocuments {
+			selectedItemsOfNotChosen = append(selectedItemsOfNotChosen, strings.Title(strings.ToLower(v[notChosen])))
+		}
+
+		selectedItemsOfNotChosen = utils.RemoveDuplicate(selectedItemsOfNotChosen)
+		selectedItemsOfNotChosen = append(selectedItemsOfNotChosen, "Enter a new "+notChosen+"...")
+
+		prompt2 := promptui.Select{
+			Label: "Please pick one of these",
+			Items: selectedItemsOfNotChosen,
+		}
+
+		_, answer2, _ = prompt2.Run()
+
+		if answer2 == "Enter a new "+notChosen+"..." {
+			prompt3 := promptui.Prompt{
+				Label: notChosen + " ?",
+			}
+			answer2, _ = prompt3.Run()
+		}
+
+	} else {
+		prompt2 := promptui.Prompt{
+			Label: notChosen + " ?",
+		}
+		answer2, _ = prompt2.Run()
+	}
+
+	return answer1, answer2
+
+}
+
 func main() {
+
+	option := os.Args[1]
+
 	db, err := kvdb.InitDB()
 	if err != nil {
 		panic(err)
@@ -91,39 +155,40 @@ func main() {
 		panic(err)
 	}
 
-	//fmt.Println(currDb)
-
+	// Name or surname ?
 	choices := []string{"Name", "Surname"}
 
 	nameOrSurname := promptui.Select{
 		Label: "Name or surname ?",
 		Items: choices,
 	}
-	i, choice, err := nameOrSurname.Run()
 
+	i, choice, err := nameOrSurname.Run()
+	if err != nil {
+		panic(err)
+	}
+
+	// Setting the notChosen => Name or Surname
 	i2 := (i - 1) * (-1) // Index of the notChosen item
 	notChosen := choices[i2]
 
+	// Search type in DB => Name or Surname
 	currSearchType = choice
-	t1 := prompt.Input(choice+" ? : ", suggest)
 
-	mode = 2
+	var t1 string
+	var t2 string
 
-	currSearchType = notChosen
+	if option == "select" {
+		t1, t2 = runSelectMode(choice, notChosen)
 
-	//log.Println(selectedDocuments)
-
-	t2 := prompt.Input(notChosen+" ? : ", suggest)
+	} else if option == "suggest" {
+		t1, t2 = runSuggestMode(choice, notChosen)
+	}
 
 	result := make(map[string]string)
 
 	result[choice] = strings.ToLower(t1)
 	result[notChosen] = strings.ToLower(t2)
-
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return
-	}
 
 	jsonString, err := json.Marshal(result)
 
