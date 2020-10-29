@@ -63,6 +63,7 @@ func suggest(d prompt.Document) []prompt.Suggest {
 
 	var res []string
 	var promptSuggest []prompt.Suggest
+
 	d.Text = strings.ToLower(d.Text)
 	if d.Text != "" {
 		if step == 1 {
