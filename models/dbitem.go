@@ -1,4 +1,4 @@
-package main
+package models
 
 // DBItem represents an item in the bolt DB
 type DBItem struct {
