@@ -48,11 +48,8 @@ type ConfObject struct {
 var dbItems *bolt.DB
 var dbAssoc *bolt.DB
 
-var currentDbItems map[string]string = make(map[string]string)
-var currentDbAssoc map[string]string = make(map[string]string)
-
-var currentRealDbItems map[string]Item = make(map[string]Item)
-var currentRealDbAssocs map[string]Association = make(map[string]Association)
+var currentDbItems map[string]Item = make(map[string]Item)
+var currentDbAssocs map[string]Association = make(map[string]Association)
 
 var currentConfidences []ConfObject
 
@@ -101,29 +98,39 @@ func searchFirstItem(ttype string, search string) []Item {
 }
 
 func generateAllCurrItemsANDAssoc() {
-	for k, v := range currentDbItems {
-		item := JSONTOItem(v)
-		currentRealDbItems[k] = item
+
+	DBItems, err := kvdb.ReadAll(dbItems)
+	if err != nil {
+		panic(err)
+	}
+	DBAssocs, err := kvdb.ReadAll(dbAssoc)
+	if err != nil {
+		panic(err)
 	}
 
-	for k, v := range currentDbAssoc {
+	for k, v := range DBItems {
+		item := JSONTOItem(v)
+		currentDbItems[k] = item
+	}
+
+	for k, v := range DBAssocs {
 		assoc := JSONTOAssociation(v)
-		currentRealDbAssocs[k] = assoc
+		currentDbAssocs[k] = assoc
 	}
 
 }
 
 func calculateAllConfidences() {
 
-	for k, a := range currentRealDbAssocs {
+	for k, a := range currentDbAssocs {
 
 		innerKeys := strings.Split(k, ";")
 
 		name := innerKeys[0]
 		surname := innerKeys[1]
 
-		itemName := currentRealDbItems["name;"+name]
-		itemSurname := currentRealDbItems["surname;"+surname]
+		itemName := currentDbItems["name;"+name]
+		itemSurname := currentDbItems["surname;"+surname]
 
 		confObject := ConfObject{
 			Name:       itemName,
@@ -143,19 +150,11 @@ func calculateAllConfidences() {
 
 }
 
-func returnAssociatedConfidence(ttype string, value string) ConfObject {
+func returnAssociatedConfidence(name string, surname string) ConfObject {
 	for _, c := range currentConfidences {
 
-		switch ttype {
-		case "name":
-			if c.Name.Value == value {
-				return c
-			}
-		case "surname":
-			if c.Surname.Value == value {
-				return c
-			}
-
+		if c.Name.Value == name && c.Surname.Value == surname {
+			return c
 		}
 	}
 
@@ -173,15 +172,6 @@ func main() {
 	}
 
 	dbAssoc, err = kvdb.InitDB("go-kb-assoc")
-	if err != nil {
-		panic(err)
-	}
-
-	currentDbItems, err = kvdb.ReadAll(dbItems)
-	if err != nil {
-		panic(err)
-	}
-	currentDbAssoc, err = kvdb.ReadAll(dbAssoc)
 	if err != nil {
 		panic(err)
 	}
@@ -237,10 +227,11 @@ func main() {
 	var foundItem1 bool = false
 	var foundItem2 bool = false
 
+	c := returnAssociatedConfidence(answers["name"], answers["surname"])
+
 	if _, ok := pickedItems[chosen]; ok {
 		foundItem1 = true
 		item1 = pickedItems[chosen]
-		c := returnAssociatedConfidence(chosen, item1.Value)
 		item1.Pk = item1.Pk + (1-item1.Pk)*c.Confidence
 
 	} else {
@@ -254,7 +245,6 @@ func main() {
 	if _, ok := pickedItems[notChosen]; ok {
 		foundItem2 = true
 		item2 = pickedItems[notChosen]
-		c := returnAssociatedConfidence(notChosen, item2.Value)
 		item2.Pk = item2.Pk + (1-item2.Pk)*c.Confidence
 	} else {
 		item2 = Item{
@@ -271,7 +261,6 @@ func main() {
 	}
 
 	if foundItem1 && foundItem2 {
-		c := returnAssociatedConfidence(chosen, item1.Value)
 		assoc.Pk = assoc.Pk + (1-assoc.Pk)*c.Confidence
 	}
 
@@ -279,17 +268,15 @@ func main() {
 	saveItemInDb(item2)
 	saveAssocInDb(assoc)
 
-	currentDbItems, err = kvdb.ReadAll(dbItems)
-	if err != nil {
-		panic(err)
-	}
+	generateAllCurrItemsANDAssoc()
 
-	currentDbAssoc, err = kvdb.ReadAll(dbAssoc)
-	if err != nil {
-		panic(err)
-	}
-
+	fmt.Println(strings.Repeat("_", 25))
+	fmt.Println("Items")
+	fmt.Println(strings.Repeat("_", 25))
 	fmt.Println(currentDbItems)
-	fmt.Println(currentDbAssoc)
+	fmt.Println(strings.Repeat("_", 25))
+	fmt.Println("Associations")
+	fmt.Println(strings.Repeat("_", 25))
+	fmt.Println(currentDbAssocs)
 
 }
