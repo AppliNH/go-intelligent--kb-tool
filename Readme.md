@@ -14,6 +14,4 @@ The next time you enter `Surname=Paolo` it will propose you to chose between `To
 
 ## Run it
 
-`go run main.go`+ :
-- `select` for suggestions with a selection style
-- `suggest` for suggestions with an auto-completion suggestion style
+`go run main.go`
