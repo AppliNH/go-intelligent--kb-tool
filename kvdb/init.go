@@ -6,7 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-func InitDB() (*bolt.DB, error) {
+func InitDB(dbName string) (*bolt.DB, error) {
 
 	//ex, _ := os.Executable()
 
@@ -17,7 +17,7 @@ func InitDB() (*bolt.DB, error) {
 		os.Mkdir("./db", 0700)
 	}
 
-	db, err := bolt.Open("./db/go-kb.db", 0644, nil)
+	db, err := bolt.Open("./db/"+dbName+".db", 0644, nil)
 	if err != nil {
 		panic(err)
 	}
