@@ -158,7 +158,7 @@ func returnAssociatedConfidence(name string, surname string) ConfObject {
 		}
 	}
 
-	return ConfObject{}
+	return ConfObject{Confidence: 0}
 }
 
 func main() {
