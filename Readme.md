@@ -1,7 +1,9 @@
 # Go-Intelligent Knowledge base tool
 
 *This has been made in the context of an assignment*
-*Thomas MARTIN, Séraphin HENRY, Victor CAVERO*
+
+
+*By : Thomas MARTIN, Séraphin HENRY, Victor CAVERO*
 ## What is it
 
 Go-KB is CLI which aims to store the data you give in order to make the best suggestions the next time you enter data.
