@@ -13,6 +13,7 @@ Here, it works with a combination of name and surname.
 Let's say you give `Name=Toto` and `Surname=Paolo`, then `Name=Titi`and `Surname=Paolo`.
 
 The next time you enter `Surname=Paolo` it will propose you to chose between `Toto` and `Titi` as a name. Or you can also enter a new one.
+But if you enter more often `Toto`, then this answer will have a better score and will be **placed at the top of the suggestions list.**
 
 Everything is saved made to lower key and saved in a Key-Value database.
 
