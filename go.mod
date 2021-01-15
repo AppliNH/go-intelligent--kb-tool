@@ -1,4 +1,4 @@
-module go-kb
+module github.com/applinh/go-intelligent-kb-tool
 
 go 1.15
 

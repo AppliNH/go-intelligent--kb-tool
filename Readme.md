@@ -14,10 +14,16 @@ Let's say you give `Name=Toto` and `Surname=Paolo`, then `Name=Titi`and `Surname
 
 The next time you enter `Surname=Paolo` it will propose you to chose between `Toto` and `Titi` as a name. Or you can also enter a new one.
 
+Everything is saved made to lower key and saved in a Key-Value database.
+
 ## Run it
 
 You will need to have the golang runtime to be installed [(see here)](https://golang.org/).
 
-Then you can run :
+Then you can :
 
-`go run main.go`
+- run `go get -u github.com/applinh/go-intelligent-kb-tool`
+
+OR
+
+- clone the repo, `cd` inside it, and run `go run main.go`

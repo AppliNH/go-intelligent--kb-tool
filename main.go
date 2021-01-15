@@ -3,13 +3,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"go-kb/utils"
 	"math"
 	"sort"
 	"strings"
 
-	"go-kb/kvdb"
-	. "go-kb/models"
+	"github.com/applinh/go-intelligent-kb-tool/utils"
+
+	. "github.com/applinh/go-intelligent-kb-tool/models"
+
+	"github.com/applinh/go-intelligent-kb-tool/kvdb"
 
 	"github.com/boltdb/bolt"
 	"github.com/c-bata/go-prompt"
