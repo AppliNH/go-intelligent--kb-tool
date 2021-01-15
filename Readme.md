@@ -23,6 +23,7 @@ You will need to have the golang runtime to be installed [(see here)](https://go
 Then you can :
 
 - run `go get -u github.com/applinh/go-intelligent-kb-tool`
+- Then you can run the tool with the command `go-intelligent-kb-tool`
 
 OR
 
