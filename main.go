@@ -20,10 +20,16 @@ var currentType string
 
 func suggest(d prompt.Document) []prompt.Suggest {
 
+	if d.Text == "" {
+		return nil
+	}
+
 	var promptSuggest []prompt.Suggest
 
 	d.Text = strings.ToLower(d.Text)
+	// log.Println(d.Text)
 	res := searchFirstItem(currentType, d.Text)
+	// log.Println(res)
 	var resStrings []string
 	for _, i := range res {
 		resStrings = append(resStrings, i.Value)
@@ -34,6 +40,8 @@ func suggest(d prompt.Document) []prompt.Suggest {
 	for _, v := range resStrings {
 		promptSuggest = append(promptSuggest, prompt.Suggest{Text: v})
 	}
+	// log.Println("_____")
+	// log.Println(promptSuggest)
 	return prompt.FilterHasPrefix(promptSuggest, d.GetWordBeforeCursor(), true)
 
 }
@@ -78,12 +86,14 @@ func saveAssocInDb(assoc Association) {
 func searchFirstItem(ttype string, search string) []Item {
 
 	var results []Item
-
+	// log.Println(currentConfidences)
 	for _, v := range currentConfidences {
 		switch ttype {
 		case "name":
 			if strings.Contains(v.Name.Value, search) {
 				results = append(results, v.Name)
+				// log.Print("RESULTS")
+				// log.Println(results)
 			}
 		case "surname":
 			if strings.Contains(v.Surname.Value, search) {
@@ -255,14 +265,18 @@ func main() {
 	}
 
 	assoc = Association{
-		Name:    answers["name"],
-		Surname: answers["surname"],
+		Name:    strings.ToLower(answers["name"]),
+		Surname: strings.ToLower(answers["surname"]),
 		Pk:      0.3,
 	}
 
 	if foundItem1 && foundItem2 {
 		assoc.Pk = assoc.Pk + (1-assoc.Pk)*c.Confidence
 	}
+
+	// To lower
+	item1.Value = strings.ToLower(item1.Value)
+	item2.Value = strings.ToLower(item2.Value)
 
 	saveItemInDb(item1)
 	saveItemInDb(item2)
